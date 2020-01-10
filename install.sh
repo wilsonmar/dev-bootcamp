@@ -194,7 +194,7 @@ done
 
 
 h2 "Downloading bash script install.sh ..."
-   curl -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
+   curl -s -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
 
 
 ### Get secrets from $HOME/secrets.sh
@@ -250,7 +250,7 @@ h2 "Install Postgres packages:"
 
 
 h2 "Install Python ecosystem:"
-   curl -O https://bootstrap.pypa.io/get-pip.py
+   curl -s -O https://bootstrap.pypa.io/get-pip.py
       #  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
       #                                   Dload  Upload   Total   Spent    Left  Speed
       # 100 1734k  100 1734k    0     0  35.2M      0 --:--:-- --:--:-- --:--:-- 36.0M   
@@ -262,7 +262,7 @@ h2 "Install Python ecosystem:"
 
 
 h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
-   curl -o ~/.git-prompt.sh \
+   curl -s -o ~/.git-prompt.sh \
       https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
          # 100 16938  100 16938    0     0   124k      0 --:--:-- --:--:-- --:--:--  124k
 
