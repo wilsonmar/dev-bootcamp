@@ -21,14 +21,14 @@ set -eu pipefail  # pipefail counts as a parameter
 
 # TEMPLATE: Capture starting timestamp and display no matter how it ends:
 EPOCH_START="$(date -u +%s)"  # such as 1572634619
-FREE_DISKBLOCKS_START="$(df -k . | cut -d' ' -f 6)"  # 910631000 Available
+#FREE_DISKBLOCKS_START="$(df -k . | cut -d' ' -f 6)"  # 910631000 Available
 
 trap this_ending EXIT
 trap this_ending INT QUIT TERM
 this_ending() {
    EPOCH_END=$(date -u +%s);
    DIFF=$((EPOCH_END-EPOCH_START))
-   FREE_DISKBLOCKS_END="$(df -k . | cut -d' ' -f 6)"
+#   FREE_DISKBLOCKS_END="$(df -k . | cut -d' ' -f 6)"
 #   DIFF=$(((FREE_DISKBLOCKS_START-FREE_DISKBLOCKS_END)))
 #   MSG="End of script after $((DIFF/360)) minutes and $DIFF bytes disk space consumed."
    #   info 'Elapsed HH:MM:SS: ' $( awk -v t=$beg-seconds 'BEGIN{t=int(t*1000); printf "%d:%02d:%02d\n", t/3600000, t/60000%60, t/1000%60}' )
@@ -108,12 +108,13 @@ fi
 HOSTNAME=$( hostname )
 PUBLIC_IP=$( curl -s ifconfig.me )
 
-### Print heading:
+### Print run heading:
       note "Bash $BASH_VERSION at $LOG_DATETIME"  # built-in variable.
       note "OS_TYPE=$OS_TYPE on hostname=$HOSTNAME at PUBLIC_IP=$PUBLIC_IP."
    if [ -f "$OS_DETAILS" ]; then
       note "$OS_DETAILS"
    fi
+
 
 ### Get secrets from $HOME/secrets.sh
 
@@ -127,6 +128,7 @@ h2 "Config git/GitHub user.name & email"
       GITHUB_USER_NAME=${GITHUB_USER_NAME:-"John Doe"}
       read -p "Enter your GitHub user email [john_doe@mckinsey.com]: " GITHUB_USER_EMAIL
       GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-"John_Doe@mckinsey.com"}
+      # cp secrets.sh  $HOME
    fi
    git config --global user.name  "$GITHUB_USER_NAME"
    git config --global user.email "$GITHUB_USER_EMAIL"
@@ -171,7 +173,8 @@ h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
    source ~/.git-prompt.sh
 
    . ~/.bash_profile
-      #  (master)Developer:~/environment/snoodle-ui (master) $
+   # Prompt should now be: (master)Developer:~/environment/snoodle-ui (master) $
+
 
 h2 "Run Docker ..."
    docker run --rm --name snoodle-postgres -p 5432:5432 \
@@ -184,15 +187,20 @@ h2 "Run Docker ..."
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
 
-   ps -al
+# openvt
+# deallocvt n
 
-exit
+   note "$( ps -al )"
+
+
+exit  # TODO:
 
 
 h2 "Inside Docker: Run Flask ..."
 
-cd snoodle-api
 # docker exec -it 
+
+cd snoodle-api
 FLASK_APP=snoodle DB_HOST=localhost \
    DB_USERNAME=snoodle \
    DB_PASSWORD=USE_IAM \
@@ -206,6 +214,14 @@ FLASK_APP=snoodle python3 -m flask run
 
 # shell into db
 psql postgresql://snoodle:snoodle@localhost:5432/snoodle
+   # psql (9.2.24, server 12.1 (Debian 12.1-1.pgdg100+1))
+   # WARNING: psql version 9.2, server version 12.0.
+   #          Some psql features might not work.
+   # Type "help" for help.
+   # 
+   # snoodle=# 
+   # \q 
+
 
 npm install
 npm start
