@@ -14,13 +14,15 @@
 
 #clear  # screen (but not history)
 
-set -eu pipefail  # pipefail counts as a parameter
+set -e  # to end if 
+# set -eu pipefail  # pipefail counts as a parameter
 # set -x to show commands for specific issues.
 # set -o nounset
-# set -e  # to end if 
 
 # TEMPLATE: Capture starting timestamp and display no matter how it ends:
 EPOCH_START="$(date -u +%s)"  # such as 1572634619
+LOG_DATETIME=$(date +%Y-%m-%dT%H:%M:%S%z)-$((1 + RANDOM % 1000))
+
 #FREE_DISKBLOCKS_START="$(df -k . | cut -d' ' -f 6)"  # 910631000 Available
 
 trap this_ending EXIT
@@ -77,8 +79,6 @@ warnError() {
   printf "${red}✖ %s${reset}\n" "$(echo "$@" | sed '/./,$!d')"
 }
 
-LOG_DATETIME=$(date +%Y-%m-%dT%H:%M:%S%z)-$((1 + RANDOM % 1000))
-
 # Check what operating system is used now.
    OS_TYPE="$(uname)"
    OS_DETAILS=""  # default blank.
@@ -108,7 +108,84 @@ fi
 HOSTNAME=$( hostname )
 PUBLIC_IP=$( curl -s ifconfig.me )
 
-### Print run heading:
+
+# h2 "STEP 1 - Ensure run variables are based on arguments or defaults ..."
+args_prompt() {
+   echo "This bash shell script installs for dev-codecamp within an AWS EC2."
+   echo "USAGE EXAMPLE during testing (minimal inputs using defaults):"
+   #echo "   ./install.sh -u \"John Doe\" -e \"john_doemckinsey.com\" -v -D"
+   echo "OPTIONS:"
+   echo "   -n       GitHub user name"
+   echo "   -e       GitHub user email"
+   echo "   -R       reboot Docker before run"
+   echo "   -v       to run verbose (list space use and each image to console)"
+   echo "   -d       to delete files after run (to save disk space)"
+ }
+if [ $# -eq 0 ]; then  # display if no paramters are provided:
+   args_prompt
+fi
+exit_abnormal() {                              # Function: Exit with error.
+  args_prompt
+  exit 1
+}
+# Defaults:
+UPDATE_PKGS=true
+RESTART_DOCKER=false
+SECRETS_FILEPATH="$HOME/secrets.sh"  # -s
+GITHUB_USER_NAME=""                  # -n
+GITHUB_USER_EMAIL=""                 # -e
+
+RUN_ACTUAL=true  # false as dry run is default.  TODO: Add parse of command parameters
+RUN_DELETE_AFTER=false     # -D
+while test $# -gt 0; do
+  case "$1" in
+    -h|--help)
+      args_prompt
+      exit 0
+      ;;
+    -n*)
+      shift
+      export GITHUB_USER_NAME=`echo $1 | sed -e 's/^[^=]*=//g'`
+      shift
+      ;;
+    -e*)
+      shift
+      export GITHUB_USER_EMAIL=`echo $1 | sed -e 's/^[^=]*=//g'`
+      shift
+      ;;
+    -s*)
+      shift
+      export SECRETS_FILEPATH=`echo $1 | sed -e 's/^[^=]*=//g'`
+      shift
+      ;;
+    -U)
+      export UPDATE_PKGS=true
+      shift
+      ;;
+    -R)
+      export RESTART_DOCKER=true
+      shift
+      ;;
+    -v)
+      export RUN_VERBOSE=true
+      shift
+      ;;
+    -D)
+      export RUN_DELETE_AFTER=true
+      shift
+      ;;
+    *)
+      error "Parameter \"$1\" not recognized. Aborting."
+      exit 0
+      break
+      ;;
+  esac
+done
+
+
+#################### Print run heading:
+
+      note "From $0 in $PWD"
       note "Bash $BASH_VERSION at $LOG_DATETIME"  # built-in variable.
       note "OS_TYPE=$OS_TYPE on hostname=$HOSTNAME at PUBLIC_IP=$PUBLIC_IP."
    if [ -f "$OS_DETAILS" ]; then
@@ -119,16 +196,16 @@ PUBLIC_IP=$( curl -s ifconfig.me )
 ### Get secrets from $HOME/secrets.sh
 
 h2 "Config git/GitHub user.name & email"
-   if [ -f "$HOME/secrets.sh" ]; then
-      chmod +x "$HOME/secrets.sh"
-      source   "$HOME/secrets.sh"  # run file containing variable definitions.
-      note "GITHUB_USER_NAME=\"$GITHUB_USER_NAME\" read from file $HOME/secrets.sh"
+   if [ -f "$SECRETS_FILEPATH" ]; then
+      chmod +x "$SECRETS_FILEPATH"
+      source   "$SECRETS_FILEPATH"  # run file containing variable definitions.
+      note "GITHUB_USER_NAME=\"$GITHUB_USER_NAME\" read from file $SECRETS_FILEPATH"
    else
       read -p "Enter your GitHub user name [John Doe]: " GITHUB_USER_NAME
       GITHUB_USER_NAME=${GITHUB_USER_NAME:-"John Doe"}
       read -p "Enter your GitHub user email [john_doe@mckinsey.com]: " GITHUB_USER_EMAIL
       GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-"John_Doe@mckinsey.com"}
-      # cp secrets.sh  $HOME
+      # cp secrets.sh  "$SECRETS_FILEPATH"
    fi
    git config --global user.name  "$GITHUB_USER_NAME"
    git config --global user.email "$GITHUB_USER_EMAIL"
@@ -136,7 +213,24 @@ h2 "Config git/GitHub user.name & email"
 
 ## Setup env
 
-h2 "Install packages:"
+h2 "Install package managerss:"
+   if [ PACKAGE_MANAGER == "yum" ]; then
+      if [ "${UPDATE_PKGS}" = true ]; then
+         sudo yum install ...
+      fi
+   elif [ PACKAGE_MANAGER == "brew" ]; then
+      if ! command -v brew ; then
+         info "Installing brew ..."
+         ## Install Ruby ...
+      else
+         if [ "${UPDATE_PKGS}" = true ]; then
+            info "Upgrading brew ..."
+         fi
+      fi
+   fi
+
+
+h2 "Install Postgres packages:"
    if [ PACKAGE_MANAGER == "yum" ]; then
       sudo yum -y install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
       if [ "${RUN_VERBOSE}" = true ]; then
@@ -176,6 +270,22 @@ h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
    # Prompt should now be: (master)Developer:~/environment/snoodle-ui (master) $
 
 
+# h2 "Install Docker ..."
+
+
+# "/snoodle-postgres" is already in use
+
+   if [ "$RESTART_DOCKER" = false ]; then
+      note "Not restarting Docker ..."
+   else
+      h2 "1.2 Restarting Docker ..." 
+      # Restart Docker to avoid:
+      # Cannot connect to the Docker daemon at unix:///var/run/docker.sock. 
+      # Is the docker daemon running?.
+      killall com.docker.osx.hyperkit.linux
+   fi
+
+
 h2 "Run Docker ..."
    docker run --rm --name snoodle-postgres -p 5432:5432 \
    -e POSTGRES_USER=snoodle \
@@ -187,11 +297,10 @@ h2 "Run Docker ..."
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
 
-# openvt
-# deallocvt n
-
    note "$( ps -al )"
 
+# openvt
+# deallocvt n
 
 exit  # TODO:
 
@@ -210,8 +319,6 @@ FLASK_APP=snoodle DB_HOST=localhost \
 # With postgres app
 FLASK_APP=snoodle python3 -m flask run
 
-# cd snoodle-ui
-
 # shell into db
 psql postgresql://snoodle:snoodle@localhost:5432/snoodle
    # psql (9.2.24, server 12.1 (Debian 12.1-1.pgdg100+1))
@@ -221,6 +328,9 @@ psql postgresql://snoodle:snoodle@localhost:5432/snoodle
    # 
    # snoodle=# 
    # \q 
+
+
+# cd snoodle-ui  ???
 
 
 npm install
