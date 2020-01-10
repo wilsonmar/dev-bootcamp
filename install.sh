@@ -5,7 +5,7 @@
 # After getting into the Cloud9 enviornment,
 # cd to folder, copy this line and paste in the Cloud9 terminal:
 # bash -c "$(curl -fsSL https://git.btcmp-team2.mckinsey.cloud/snippets/1/raw)"
-# bash -c "$(curl -fsSL https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/bash/install.sh)"
+# bash -c "$(curl -fsSL https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh)"
 
 # This was tested on macOS Mojava and Amazon Linux 2018.2 in EC2.
 
@@ -193,6 +193,10 @@ done
    fi
 
 
+h2 "Downloading bash script install.sh ..."
+   curl -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
+
+
 ### Get secrets from $HOME/secrets.sh
 
 h2 "Config git/GitHub user.name & email"
@@ -246,7 +250,6 @@ h2 "Install Postgres packages:"
 
 
 h2 "Install Python ecosystem:"
-   note "$PWD"
    curl -O https://bootstrap.pypa.io/get-pip.py
       #  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
       #                                   Dload  Upload   Total   Spent    Left  Speed
@@ -285,6 +288,27 @@ h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
       killall com.docker.osx.hyperkit.linux
    fi
 
+
+h2 "Remove Docker image running from previous run ..."
+
+# List all stopped containers created:
+   docker container ls -a --filter status=exited --filter status=created
+
+# Remove all stopped containers:  TODO: Remove current container only:
+   #docker container prune --force
+
+h2 "Stop active containers ..."
+   # See https://linuxize.com/post/how-to-remove-docker-images-containers-volumes-and-networks/
+   ACTIVE_CONTAINER=$( docker container ls -aq )
+   if [ ! -z "$ACTIVE_CONTAINER" ]; then  # var blank
+      note "Stopping active container $ACTIVE_CONTAINER ..."
+      docker container stop $ACTIVE_CONTAINER
+      if [ "$RUN_VERBOSE" = true ]; then
+         docker ps  # should not list anything now.
+      fi
+   fi
+
+exit
 
 h2 "Run Docker ..."
    docker run --rm --name snoodle-postgres -p 5432:5432 \
