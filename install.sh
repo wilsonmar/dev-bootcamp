@@ -292,12 +292,13 @@ h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
 h2 "Remove Docker image running from previous run ..."
 
 # List all stopped containers created:
-   docker container ls -a --filter status=exited --filter status=created
+   docker container ls -aq 
+   #docker container ls -a --filter status=exited --filter status=created
 
 # Remove all stopped containers:  TODO: Remove current container only:
    #docker container prune --force
 
-h2 "Stop any active containers ..."
+h2 "Stop any active containers (Postgres) ..."
    # See https://linuxize.com/post/how-to-remove-docker-images-containers-volumes-and-networks/
    ACTIVE_CONTAINER=$( docker container ls -aq )
    if [ ! -z "$ACTIVE_CONTAINER" ]; then  # var blank
@@ -308,10 +309,10 @@ h2 "Stop any active containers ..."
       fi
    fi
 
-exit
 
-h2 "Run Docker ..."
-   docker run --rm --name snoodle-postgres -p 5432:5432 \
+   ACTIVE_CONTAINER="snoodle-postgres"
+h2 "Run Docker container \"$ACTIVE_CONTAINER\" ..."
+   docker run --rm --name "$ACTIVE_CONTAINER" -p 5432:5432 \
    -e POSTGRES_USER=snoodle \
    -e POSTGRES_PASSSWORD=snoodle \
    -e POSTGRES_DB=snoodle \
@@ -321,7 +322,10 @@ h2 "Run Docker ..."
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
 
+h2 "Processes now ..."
    note "$( ps -al )"
+
+exit
 
 # openvt
 # deallocvt n
