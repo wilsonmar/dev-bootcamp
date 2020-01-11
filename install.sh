@@ -297,7 +297,7 @@ h2 "Remove Docker image running from previous run ..."
 # Remove all stopped containers:  TODO: Remove current container only:
    #docker container prune --force
 
-h2 "Stop active containers ..."
+h2 "Stop any active containers ..."
    # See https://linuxize.com/post/how-to-remove-docker-images-containers-volumes-and-networks/
    ACTIVE_CONTAINER=$( docker container ls -aq )
    if [ ! -z "$ACTIVE_CONTAINER" ]; then  # var blank
