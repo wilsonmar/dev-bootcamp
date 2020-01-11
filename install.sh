@@ -14,7 +14,7 @@
 
 #clear  # screen (but not history)
 
-set -e  # to end if 
+#set -e  # to end if 
 # set -eu pipefail  # pipefail counts as a parameter
 # set -x to show commands for specific issues.
 # set -o nounset
@@ -303,7 +303,7 @@ h2 "Stop any active containers (Postgres) ..."
    ACTIVE_CONTAINER=$( docker container ls -aq )
    if [ ! -z "$ACTIVE_CONTAINER" ]; then  # var blank
       note "Stopping active container $ACTIVE_CONTAINER ..."
-      docker container stop $ACTIVE_CONTAINER
+      docker container stop "$ACTIVE_CONTAINER"
       if [ "$RUN_VERBOSE" = true ]; then
          docker ps  # should not list anything now.
       fi
@@ -325,7 +325,6 @@ h2 "Run Docker container \"$ACTIVE_CONTAINER\" ..."
 h2 "Processes now ..."
    note "$( ps -al )"
 
-exit
 
 # openvt
 # deallocvt n
