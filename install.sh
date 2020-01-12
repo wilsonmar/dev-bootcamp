@@ -341,21 +341,20 @@ if [ "$RESTART_DOCKER" = false ]; then
    note "Not restarting Docker daemon ..."
 else
    RESULT="$( docker inspect -f '{{.State.Running}}' $DOCKER_DB_NANE )"
-   if [ "$RESULT" = true ]; then  # Docker is running!
-      h2 "1.2 Restarting Docker daemon in $OS_TYPE ..." 
-      if [ "$OS_TYPE" == "macOS" ]; then
-         killall com.docker.osx.hyperkit.linux
-      else
-         # systemctl is a part of, is a service manager designed specifically for Linux 
-         systemctl restart docker
-      fi
-   else   # start docker...
+   if [ ! "$RESULT" = true ]; then  # Docker is NOT running!
       h2 "1.2 Enabling and Starting Docker daemon ..." 
          # Restart Docker to avoid:
          # Cannot connect to the Docker daemon at unix:///var/run/docker.sock. 
          # Is the docker daemon running?.
          systemctl enable docker
          systemctl start docker
+   else
+      h2 "1.2 Restarting Docker daemon in $OS_TYPE ..." 
+      if [ "$OS_TYPE" == "macOS" ]; then
+         killall com.docker.osx.hyperkit.linux
+      else
+         # systemctl is a part of, is a service manager designed specifically for Linux 
+         systemctl restart docker
       fi
    fi
 fi
