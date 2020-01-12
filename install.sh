@@ -4,8 +4,7 @@
 # This downloads and installs all the utilities, then verifies.
 # After getting into the Cloud9 enviornment,
 # cd to folder, copy this line and paste in the Cloud9 terminal:
-# bash -c "$(curl -fsSL https://git.btcmp-team2.mckinsey.cloud/snippets/1/raw)"
-# bash -c "$(curl -fsSL https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh)"
+# bash -c "$(curl -fsSL https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh)" -v
 
 # This was tested on macOS Mojave and Amazon Linux 2018.2 in EC2.
 
@@ -136,7 +135,7 @@ exit_abnormal() {                              # Function: Exit with error.
 # Defaults (default true so flag turns it true):
    UPDATE_PKGS=false
    RESTART_DOCKER=false
-   RUN_ACTUAL=false  # false as dry run is default.  TODO: Add parse of command parameters
+   RUN_ACTUAL=false  # false as dry run is default.
    RUN_DELETE_AFTER=false     # -D
 
 DOCKER_DB_NANE="snoodle-postgres"
@@ -385,11 +384,13 @@ fi
 
 
 h2 "Remove all containers running in Docker from previous run ..."
-   docker container ls
+   docker container ls -q
    #docker container ls -a --filter status=exited --filter status=created
 
-   # Remove all stopped containers:  TODO: Remove current container only:
-   docker container prune --force
+   # Remove all running containers:  
+   docker rm `docker container ls -q` --force
+   # To remove stopped containers as well before shutting down environment:
+   #docker container prune --force
 
 
    h2 "Stop any active containers (Postgres) ..."
@@ -409,8 +410,7 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
    nohup docker run -d --rm --name "$DOCKER_DB_NANE" -p 5432:5432 \
    -e POSTGRES_USER=snoodle \
    -e POSTGRES_PASSSWORD=snoodle \
-   -e POSTGRES_DB=snoodle postgres \
-   &>/dev/null &
+   -e POSTGRES_DB=snoodle postgres
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv6 address "::", port 5432
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
@@ -420,7 +420,17 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
 
    docker container ls
 
-   note "$( jobs )"
+h2 "Run Python Flask snoodle-api app ..."
+cd snoodle-api
+if [ ! -f "snoodle/app.py" ]; then
+   error "Flask app not found. Aborting."
+else
+   FLASK_APP=snoodle DB_HOST=localhost \
+      DB_USERNAME=snoodle \
+      DB_PASSWORD=USE_IAM \
+      DB_NAME=snoodle HTTP_SCHEME=https 
+   python3 -m flask run 
+fi
 
 # openvt
 # deallocvt n
