@@ -284,22 +284,6 @@ h2 "Install Python pip ecosystem:"
 
 
 
-h2 "Install Postgres packages:"
-   if [ PACKAGE_MANAGER == "brew" ]; then
-      brew install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
-      if [ "${RUN_VERBOSE}" = true ]; then
-         brew list
-      fi
-   elif [ PACKAGE_MANAGER == "yum" ]; then
-      sudo yum -y install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
-      if [ "${RUN_VERBOSE}" = true ]; then
-         sudo yum list installed
-      fi
-   fi
-   note "$( postgres --version )"  # postgres (PostgreSQL) 9.2.24
-
-
-
 # First remove boot2docker and Kitematic https://github.com/boot2docker/boot2docker/issues/437
 if ! command -v docker >/dev/null; then  # /usr/local/bin/docker
       h2 "Installing docker ..."
@@ -319,7 +303,7 @@ if ! command -v docker >/dev/null; then  # /usr/local/bin/docker
 
 else # Docker installed:
    if [ "${UPDATE_PKGS}" = true ]; then
-         h2 "Upgrading docker ..."
+         h2 "Upgrading Docker ..."
          docker version
          brew upgrade docker 
          brew upgrade docker-compose  
@@ -333,6 +317,24 @@ fi
 docker info --format "{{.OperatingSystem}}"
    # ON MACOS: Docker Desktop
    # Amazon Linux AMI 2018.03
+
+
+
+h2 "Install Postgres packages:"
+   if [ PACKAGE_MANAGER == "brew" ]; then
+      brew install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
+      if [ "${RUN_VERBOSE}" = true ]; then
+         brew list
+      fi
+   elif [ PACKAGE_MANAGER == "yum" ]; then
+      sudo yum -y install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
+      if [ "${RUN_VERBOSE}" = true ]; then
+         sudo yum list installed
+      fi
+   fi
+   note "$( postgres --version )"  # postgres (PostgreSQL) 9.2.24
+
+
 
 
 if [ "$RESTART_DOCKER" = false ]; then
