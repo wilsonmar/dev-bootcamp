@@ -94,6 +94,10 @@ elif [ "$(uname)" == "Linux" ]; then  # it's on a Mac:
       OS_DETAILS=$( cat "/etc/os-release" )  # ID_LIKE="rhel fedora"
       OS_TYPE="Fedora"  # for yum 
       PACKAGE_MANAGER="yum"
+   elif [ -f "/etc/redhat-release" ]; then
+      OS_DETAILS=$( cat "/etc/redhat-release" )  # ID_LIKE="rhel fedora"
+      OS_TYPE="RedHat"  # for yum 
+      PACKAGE_MANAGER="yum"
    elif [ -f "/etc/centos-release" ]; then
       OS_TYPE="CentOS"  # for yum
       PACKAGE_MANAGER="yum"
@@ -199,7 +203,7 @@ done
    fi
 
 cd ~/environment/
-      note "$PWD"
+      note "echo $PWD"
 
 h2 "Downloading bash script install.sh ..."
    curl -s -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
@@ -256,8 +260,8 @@ h2 "Config git/GitHub user.name & email"
        apt-get install python-pip
 
    elif [ PACKAGE_MANAGER == "yum" ]; then
-      if ! command -v brew ; then
-         h2 "Installing brew package manager using Ruby ..."
+      if ! command -v yum ; then
+         h2 "Installing yum package manager ..."
       else
          if [ "${UPDATE_PKGS}" = true ]; then
             yum -y install python-pip
@@ -315,11 +319,11 @@ if ! command -v docker >/dev/null; then  # /usr/local/bin/docker
       # /usr/local/bin/docker -> /Applications/Docker.app/Contents/Resources/bin/docker
       brew link --overwrite docker-compose
 
-      brew link --overwrite docker-machine
+  #    brew link --overwrite docker-machine
       # docker-machine-driver-xhyve driver requires superuser privileges to access the hypervisor. To enable, execute:
       # https://www.nebulaworks.com/blog/2017/04/23/getting-started-linuxkit-mac-os-x-xhyve/
-      sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
-      sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+  #    sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+  #    sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
 
 else # Docker installed:
    if [ "${UPDATE_PKGS}" = true ]; then
@@ -328,9 +332,9 @@ else # Docker installed:
          brew upgrade docker 
          brew upgrade docker-compose  
 
-         brew upgrade docker-machine 
-         brew upgrade docker-machine-driver-xhyve
-         brew upgrade xhyve
+   #      brew upgrade docker-machine 
+   #      brew upgrade docker-machine-driver-xhyve
+   #      brew upgrade xhyve
    fi
    note "$( docker --version )"
 fi
@@ -401,21 +405,23 @@ h2 "Remove all containers running in Docker from previous run ..."
 
 
 
-h2 "Run Docker container \"$DOCKER_DB_NANE\" ..."
-   nohup docker run --rm --name "$DOCKER_DB_NANE" -p 5432:5432 \
+h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
+   nohup docker run -d --rm --name "$DOCKER_DB_NANE" -p 5432:5432 \
    -e POSTGRES_USER=snoodle \
    -e POSTGRES_PASSSWORD=snoodle \
-   -e POSTGRES_DB=snoodle postgres &>/dev/null &
+   -e POSTGRES_DB=snoodle postgres \
+   &>/dev/null &
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv6 address "::", port 5432
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
 
+# control+C to exit here.
+
    docker container ls
 
    note "$( jobs )"
 
-# control+C to exit here.
 # openvt
 # deallocvt n
 
