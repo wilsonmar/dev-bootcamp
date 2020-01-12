@@ -7,14 +7,14 @@
 # bash -c "$(curl -fsSL https://git.btcmp-team2.mckinsey.cloud/snippets/1/raw)"
 # bash -c "$(curl -fsSL https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh)"
 
-# This was tested on macOS Mojava and Amazon Linux 2018.2 in EC2.
+# This was tested on macOS Mojave and Amazon Linux 2018.2 in EC2.
 
 
 ### STEP 1. Set display utilities:
 
 #clear  # screen (but not history)
 
-#set -e  # to end if 
+set -e  # to end if 
 # set -eu pipefail  # pipefail counts as a parameter
 # set -x to show commands for specific issues.
 # set -o nounset
@@ -391,50 +391,13 @@ h2 "Run Docker container \"$DOCKER_DB_NANE\" ..."
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv6 address "::", port 5432
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
+
+# control+C to exit here.
+
    RESULT="$( docker inspect -f '{{.State.Running}}' $DOCKER_DB_NANE )"
    if [ "$RESULT" = true ]; then  # Docker is running!
       docker container ls
+         # CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                    NAMES
+         # 8d0ce40c63bf        postgres            "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:5432->5432/tcp   snoodle-postgres
    fi
-
-
-h2 "Processes now ..."
-   note "$( ps -al )"
-
-
-# openvt
-# deallocvt n
-
-exit  # TODO:
-
-
-h2 "Inside Docker: Run Flask ..."
-
-# docker exec -it 
-
-cd snoodle-api
-FLASK_APP=snoodle DB_HOST=localhost \
-   DB_USERNAME=snoodle \
-   DB_PASSWORD=USE_IAM \
-   DB_NAME=snoodle HTTP_SCHEME=https \
-   python3 -m flask run 
-
-# With postgres app
-FLASK_APP=snoodle python3 -m flask run
-
-# shell into db
-psql postgresql://snoodle:snoodle@localhost:5432/snoodle
-   # psql (9.2.24, server 12.1 (Debian 12.1-1.pgdg100+1))
-   # WARNING: psql version 9.2, server version 12.0.
-   #          Some psql features might not work.
-   # Type "help" for help.
-   # 
-   # snoodle=# 
-   # \q 
-
-
-# cd snoodle-ui  ???
-
-
-npm install
-npm start
 
