@@ -114,6 +114,8 @@ FLASK_APP=snoodle DB_HOST=localhost \
 
       # Error: Could not import "snoodle".
 
+exit
+
 # With postgres app
 #FLASK_APP=snoodle python3 -m flask run
 

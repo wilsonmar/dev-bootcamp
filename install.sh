@@ -198,6 +198,8 @@ done
       note "$OS_DETAILS"
    fi
 
+cd ~/environment/
+      note "$PWD"
 
 h2 "Downloading bash script install.sh ..."
    curl -s -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
@@ -283,6 +285,8 @@ h2 "Install Python pip ecosystem:"
       # See https://pipenv.kennethreitz.org/en/latest/basics/
 
    note "$( pipenv --version )"   # pipenv, version 2018.11.26
+
+   # .venvScriptspython.exe -m pip install flask-sqlalchemy
 
    # Install packages into the pipenv virtual environment and update its Pipfile:
    pipenv install Flask-SQLAlchemy
