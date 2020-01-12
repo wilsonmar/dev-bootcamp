@@ -327,9 +327,8 @@ else # Docker installed:
          brew upgrade docker-machine 
          brew upgrade docker-machine-driver-xhyve
          brew upgrade xhyve
-      fi
    fi
-   note "$(docker --version)"
+   note "$( docker --version )"
 fi
 docker info --format "{{.OperatingSystem}}"
    # ON MACOS: Docker Desktop
