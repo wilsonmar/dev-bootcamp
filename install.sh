@@ -128,15 +128,21 @@ exit_abnormal() {                              # Function: Exit with error.
   args_prompt
   exit 1
 }
-# Defaults:
-UPDATE_PKGS=true
-RESTART_DOCKER=false
+
+# Defaults (default true so flag turns it true):
+   UPDATE_PKGS=false
+   RESTART_DOCKER=false
+   RUN_ACTUAL=false  # false as dry run is default.  TODO: Add parse of command parameters
+   RUN_DELETE_AFTER=false     # -D
+
+DOCKER_DB_NANE="snoodle-postgres"
+DOCKER_APP_NANE="snoodle"
+
 SECRETS_FILEPATH="$HOME/secrets.sh"  # -s
 GITHUB_USER_NAME=""                  # -n
 GITHUB_USER_EMAIL=""                 # -e
 
-RUN_ACTUAL=true  # false as dry run is default.  TODO: Add parse of command parameters
-RUN_DELETE_AFTER=false     # -D
+
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
@@ -259,6 +265,7 @@ h2 "Install Python ecosystem:"
       # Using cached https://files.pythonhosted.org/packages/00/b6/9cfa56b4081ad13874b0c6f96af8ce16cfbc1cb06bedf8e9164ce5551ec1/pip-19.3.1-py2.py3-none-any.whl
       # Successfully installed pip-19.3.1
    pip3 install pipenv --user
+      # for (python 3.7)
 
 
 h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
@@ -273,46 +280,84 @@ h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
    # Prompt should now be: (master)Developer:~/environment/snoodle-ui (master) $
 
 
-# h2 "Install Docker ..."
 
+# First remove boot2docker and Kitematic https://github.com/boot2docker/boot2docker/issues/437
+if ! command -v docker >/dev/null; then  # /usr/local/bin/docker
+      h2 "Installing docker ..."
+      brew install docker  docker-compose  
+      brew docker-machine  xhyve  docker-machine-driver-xhyve
+      # This creates folder ~/.docker
+      # Docker images are stored in $HOME/Library/Containers/com.docker.docker
+      brew link --overwrite docker
+      # /usr/local/bin/docker -> /Applications/Docker.app/Contents/Resources/bin/docker
+      brew link --overwrite docker-compose
 
-# "/snoodle-postgres" is already in use
+      brew link --overwrite docker-machine
+      # docker-machine-driver-xhyve driver requires superuser privileges to access the hypervisor. To enable, execute:
+      sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+      sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+else # Docker installed:
+   if [ "${UPDATE_PKGS}" = true ]; then
+         h2 "Upgrading docker ..."
+         docker version
+         brew upgrade docker 
+         brew upgrade docker-compose  
 
-   if [ "$RESTART_DOCKER" = false ]; then
-      note "Not restarting Docker ..."
-   else
-      h2 "1.2 Restarting Docker ..." 
-      # Restart Docker to avoid:
-      # Cannot connect to the Docker daemon at unix:///var/run/docker.sock. 
-      # Is the docker daemon running?.
-      killall com.docker.osx.hyperkit.linux
+         brew upgrade docker-machine 
+         brew upgrade docker-machine-driver-xhyve
+         brew upgrade xhyve
+      fi
    fi
+   note "$(docker --version)"
+fi
 
 
-h2 "Remove Docker image running from previous run ..."
+if [ "$RESTART_DOCKER" = false ]; then
+   note "Not restarting Docker daemon ..."
+else
+   RESULT="$( docker inspect -f '{{.State.Running}}' $DOCKER_DB_NANE )"
+   if [ "$RESULT" = true ]; then  # Docker is running!
+      h2 "1.2 Restarting Docker daemon in $OS_TYPE ..." 
+      if [ "$OS_TYPE" == "macOS" ]; then
+         killall com.docker.osx.hyperkit.linux
+      else
+         systemctl restart docker
+      fi
+   else   # start docker...
+      h2 "1.2 Enabling and Starting Docker daemon ..." 
+         # Restart Docker to avoid:
+         # Cannot connect to the Docker daemon at unix:///var/run/docker.sock. 
+         # Is the docker daemon running?.
+         systemctl enable docker
+         systemctl start docker
+      fi
+   fi
+fi
 
-# List all stopped containers created:
-   docker container ls -aq 
+
+h2 "Remove all containers running in Docker from previous run ..."
+   docker container ls
    #docker container ls -a --filter status=exited --filter status=created
 
-# Remove all stopped containers:  TODO: Remove current container only:
-   #docker container prune --force
+   # Remove all stopped containers:  TODO: Remove current container only:
+   docker container prune --force
 
-h2 "Stop any active containers (Postgres) ..."
+
+   h2 "Stop any active containers (Postgres) ..."
    # See https://linuxize.com/post/how-to-remove-docker-images-containers-volumes-and-networks/
-   ACTIVE_CONTAINER=$( docker container ls -aq )
-   if [ ! -z "$ACTIVE_CONTAINER" ]; then  # var blank
-      note "Stopping active container $ACTIVE_CONTAINER ..."
-      docker container stop "$ACTIVE_CONTAINER"
+   ACTIVE_CONTAINERS=$( docker container ls -aq )
+   if [ ! -z "$ACTIVE_CONTAINERS" ]; then  # var blank
+      note "Stopping active container $ACTIVE_CONTAINERS ..."
+      docker container stop "$ACTIVE_CONTAINERS"
       if [ "$RUN_VERBOSE" = true ]; then
          docker ps  # should not list anything now.
       fi
    fi
 
 
-   ACTIVE_CONTAINER="snoodle-postgres"
-h2 "Run Docker container \"$ACTIVE_CONTAINER\" ..."
-   docker run --rm --name "$ACTIVE_CONTAINER" -p 5432:5432 \
+
+h2 "Run Docker container \"$DOCKER_DB_NANE\" ..."
+   docker run --rm --name "$DOCKER_DB_NANE" -p 5432:5432 \
    -e POSTGRES_USER=snoodle \
    -e POSTGRES_PASSSWORD=snoodle \
    -e POSTGRES_DB=snoodle \
@@ -321,6 +366,11 @@ h2 "Run Docker container \"$ACTIVE_CONTAINER\" ..."
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv6 address "::", port 5432
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
+   RESULT="$( docker inspect -f '{{.State.Running}}' $DOCKER_DB_NANE )"
+   if [ "$RESULT" = true ]; then  # Docker is running!
+      docker container ls
+   fi
+
 
 h2 "Processes now ..."
    note "$( ps -al )"
