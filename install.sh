@@ -203,6 +203,19 @@ h2 "Downloading bash script install.sh ..."
    curl -s -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
 
 
+h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
+   curl -s -o ~/.git-prompt.sh \
+      https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+         # 100 16938  100 16938    0     0   124k      0 --:--:-- --:--:-- --:--:--  124k
+
+   # Add to your ~/.bash_profile:
+   source ~/.git-prompt.sh
+
+   . ~/.bash_profile
+   # Prompt should now be: (master)Developer:~/environment/snoodle-ui (master) $
+
+
+
 ### Get secrets from $HOME/secrets.sh
 
 h2 "Config git/GitHub user.name & email"
@@ -223,39 +236,36 @@ h2 "Config git/GitHub user.name & email"
 
 ## Setup env
 
-h2 "Install package managerss:"
-   if [ PACKAGE_MANAGER == "yum" ]; then
-      if [ "${UPDATE_PKGS}" = true ]; then
-         sudo yum install ...
-      fi
-   elif [ PACKAGE_MANAGER == "brew" ]; then
+   if [ PACKAGE_MANAGER == "brew" ]; then
       if ! command -v brew ; then
-         info "Installing brew ..."
-         ## Install Ruby ...
+         h2 "Installing brew package manager using Ruby ..."
+         mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master \
+            | tar xz --strip 1 -C homebrew
       else
          if [ "${UPDATE_PKGS}" = true ]; then
-            info "Upgrading brew ..."
+            h2 "Upgrading brew ..."
+         fi
+      fi
+      note "$( brew --version)"
+         # Homebrew 2.2.2
+         # Homebrew/homebrew-core (git revision e103; last commit 2020-01-07)
+         # Homebrew/homebrew-cask (git revision bbf0e; last commit 2020-01-07)
+   elif [ PACKAGE_MANAGER == "apt-get" ]; then
+       apt-get install python-pip
+
+   elif [ PACKAGE_MANAGER == "yum" ]; then
+      if ! command -v brew ; then
+         h2 "Installing brew package manager using Ruby ..."
+      else
+         if [ "${UPDATE_PKGS}" = true ]; then
+            yum -y install python-pip
          fi
       fi
    fi
 
 
-h2 "Install Postgres packages:"
-   if [ PACKAGE_MANAGER == "yum" ]; then
-      sudo yum -y install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
-      if [ "${RUN_VERBOSE}" = true ]; then
-         sudo yum list installed
-      fi
-   elif [ PACKAGE_MANAGER == "brew" ]; then
-      brew install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
-      if [ "${RUN_VERBOSE}" = true ]; then
-         brew list
-      fi
-   fi
-   note "$( postgres --version )"  # postgres (PostgreSQL) 9.2.24
 
-
-h2 "Install Python ecosystem:"
+h2 "Install Python pip ecosystem:"
    curl -s -O https://bootstrap.pypa.io/get-pip.py
       #  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
       #                                   Dload  Upload   Total   Spent    Left  Speed
@@ -264,20 +274,29 @@ h2 "Install Python ecosystem:"
       # Collecting pip
       # Using cached https://files.pythonhosted.org/packages/00/b6/9cfa56b4081ad13874b0c6f96af8ce16cfbc1cb06bedf8e9164ce5551ec1/pip-19.3.1-py2.py3-none-any.whl
       # Successfully installed pip-19.3.1
+   note "$( pip --version )" 
+      # ON MACOS: pip 19.3.1 from /Users/wilson_mar/Library/Python/3.7/lib/python/site-packages/pip (python 3.7)
+      # ON CENTO: pip 9.0.3 from /usr/lib/python2.7/dist-packages (python 2.7)
+
    pip3 install pipenv --user
       # for (python 3.7)
+   note "$( pipenv --version )"   # pipenv, version 2018.11.26
 
 
-h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
-   curl -s -o ~/.git-prompt.sh \
-      https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
-         # 100 16938  100 16938    0     0   124k      0 --:--:-- --:--:-- --:--:--  124k
 
-   # Add to your ~/.bash_profile:
-   source ~/.git-prompt.sh
-
-   . ~/.bash_profile
-   # Prompt should now be: (master)Developer:~/environment/snoodle-ui (master) $
+h2 "Install Postgres packages:"
+   if [ PACKAGE_MANAGER == "brew" ]; then
+      brew install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
+      if [ "${RUN_VERBOSE}" = true ]; then
+         brew list
+      fi
+   elif [ PACKAGE_MANAGER == "yum" ]; then
+      sudo yum -y install postgresql postgresql-server postgresql-devel postgresql-contrib postgresql-docs
+      if [ "${RUN_VERBOSE}" = true ]; then
+         sudo yum list installed
+      fi
+   fi
+   note "$( postgres --version )"  # postgres (PostgreSQL) 9.2.24
 
 
 
@@ -294,8 +313,10 @@ if ! command -v docker >/dev/null; then  # /usr/local/bin/docker
 
       brew link --overwrite docker-machine
       # docker-machine-driver-xhyve driver requires superuser privileges to access the hypervisor. To enable, execute:
+      # https://www.nebulaworks.com/blog/2017/04/23/getting-started-linuxkit-mac-os-x-xhyve/
       sudo chown root:wheel /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
       sudo chmod u+s /usr/local/opt/docker-machine-driver-xhyve/bin/docker-machine-driver-xhyve
+
 else # Docker installed:
    if [ "${UPDATE_PKGS}" = true ]; then
          h2 "Upgrading docker ..."
@@ -310,6 +331,9 @@ else # Docker installed:
    fi
    note "$(docker --version)"
 fi
+docker info --format "{{.OperatingSystem}}"
+   # ON MACOS: Docker Desktop
+   # Amazon Linux AMI 2018.03
 
 
 if [ "$RESTART_DOCKER" = false ]; then
