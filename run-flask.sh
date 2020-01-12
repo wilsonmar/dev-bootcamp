@@ -101,9 +101,8 @@ h2 "Inside snoodle-api ..."
 
 # docker exec -it 
 
-cd snoodle-api
+# cd snoodle-api
 	note "$( pwd )"
-	note "$( ls )"
 
 
 h2 "Run Flask ..."

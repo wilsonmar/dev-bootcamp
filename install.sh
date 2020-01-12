@@ -391,7 +391,7 @@ h2 "Remove all containers running in Docker from previous run ..."
       note "Stopping active container $ACTIVE_CONTAINERS ..."
       docker container stop "$ACTIVE_CONTAINERS"
       if [ "$RUN_VERBOSE" = true ]; then
-         docker ps  # should not list anything now.
+         docker ps  # should not list docker now.
       fi
    fi
 
@@ -406,6 +406,8 @@ h2 "Run Docker container \"$DOCKER_DB_NANE\" ..."
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv6 address "::", port 5432
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
+
+   docker container ls
 
    note "$( jobs )"
 
