@@ -194,6 +194,8 @@ done
 
 #################### Print run heading:
 
+cd ~/environment/
+
       note "From $0 in $PWD"
       note "Bash $BASH_VERSION at $LOG_DATETIME"  # built-in variable.
       note "OS_TYPE=$OS_TYPE on hostname=$HOSTNAME at PUBLIC_IP=$PUBLIC_IP."
@@ -201,8 +203,6 @@ done
       note "$OS_DETAILS"
    fi
 
-cd ~/environment/
-      note "echo $PWD"
 
 h2 "Downloading bash script install.sh ..."
    curl -s -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
@@ -423,15 +423,15 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
 h2 "Run Python Flask snoodle-api app ..."
 cd snoodle-api
 ls
-if [ ! -f "snoodle/app.py" ]; then
-   error "Flask app not found. Aborting."
-else
+#if [ ! -f "snoodle/app.py" ]; then
+#   error "Flask app not found. Aborting."
+#else
    FLASK_APP=snoodle DB_HOST=localhost \
       DB_USERNAME=snoodle \
       DB_PASSWORD=USE_IAM \
       DB_NAME=snoodle HTTP_SCHEME=https 
    python3 -m flask run 
-fi
+#fi
 
 # openvt
 # deallocvt n
