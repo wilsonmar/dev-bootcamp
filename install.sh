@@ -321,6 +321,7 @@ else
       if [ "$OS_TYPE" == "macOS" ]; then
          killall com.docker.osx.hyperkit.linux
       else
+         # systemctl is a part of, is a service manager designed specifically for Linux 
          systemctl restart docker
       fi
    else   # start docker...
