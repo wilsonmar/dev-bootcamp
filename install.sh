@@ -280,8 +280,24 @@ h2 "Install Python pip ecosystem:"
 
    pip3 install pipenv --user
       # for (python 3.7)
+      # See https://pipenv.kennethreitz.org/en/latest/basics/
+
    note "$( pipenv --version )"   # pipenv, version 2018.11.26
 
+   # Install packages into the pipenv virtual environment and update its Pipfile:
+   pipenv install Flask-SQLAlchemy
+      # Installing Flask-SQLAlchemy…
+      # Adding Flask-SQLAlchemy to Pipfile's [packages]…
+      # ✔ Installation Succeeded 
+      # Pipfile.lock (e25846) out of date, updating to (ca72e7)…
+      # Locking [dev-packages] dependencies…
+      # Locking [packages] dependencies…
+      # ✔ Success! 
+      # Updated Pipfile.lock (e25846)!
+      # Installing dependencies from Pipfile.lock (e25846)…
+      #      ▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉▉ 8/8 — 00:00:02
+
+   pipenv install sqlalchemy
 
 
 # First remove boot2docker and Kitematic https://github.com/boot2docker/boot2docker/issues/437
@@ -382,22 +398,19 @@ h2 "Remove all containers running in Docker from previous run ..."
 
 
 h2 "Run Docker container \"$DOCKER_DB_NANE\" ..."
-   docker run --rm --name "$DOCKER_DB_NANE" -p 5432:5432 \
+   nohup docker run --rm --name "$DOCKER_DB_NANE" -p 5432:5432 \
    -e POSTGRES_USER=snoodle \
    -e POSTGRES_PASSSWORD=snoodle \
-   -e POSTGRES_DB=snoodle \
-   postgres &
+   -e POSTGRES_DB=snoodle postgres &>/dev/null &
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
       # 2020-01-10 01:22:30.904 UTC [1] LOG:  listening on IPv6 address "::", port 5432
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
 
-# control+C to exit here.
+   note "$( jobs )"
 
-   RESULT="$( docker inspect -f '{{.State.Running}}' $DOCKER_DB_NANE )"
-   if [ "$RESULT" = true ]; then  # Docker is running!
-      docker container ls
-         # CONTAINER ID        IMAGE               COMMAND                  CREATED              STATUS              PORTS                    NAMES
-         # 8d0ce40c63bf        postgres            "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:5432->5432/tcp   snoodle-postgres
-   fi
+# control+C to exit here.
+# openvt
+# deallocvt n
+
 

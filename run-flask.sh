@@ -97,18 +97,23 @@ h2 "Processes now ..."
    fi
 
 
-h2 "Inside Docker: Run Flask ..."
+h2 "Inside snoodle-api ..."
 
 # docker exec -it 
 
 cd snoodle-api
-	pwd
+	note "$( pwd )"
+	note "$( ls )"
 
+
+h2 "Run Flask ..."
 FLASK_APP=snoodle DB_HOST=localhost \
    DB_USERNAME=snoodle \
    DB_PASSWORD=USE_IAM \
    DB_NAME=snoodle HTTP_SCHEME=https \
    python3 -m flask run 
+
+      # Error: Could not import "snoodle".
 
 # With postgres app
 #FLASK_APP=snoodle python3 -m flask run
