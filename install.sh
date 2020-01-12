@@ -11,7 +11,7 @@
 
 ### STEP 1. Set display utilities:
 
-#clear  # screen (but not history)
+clear  # screen (but not history)
 
 set -e  # to end if 
 # set -eu pipefail  # pipefail counts as a parameter
@@ -422,6 +422,7 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
 
 h2 "Run Python Flask snoodle-api app ..."
 cd snoodle-api
+ls
 if [ ! -f "snoodle/app.py" ]; then
    error "Flask app not found. Aborting."
 else
