@@ -241,7 +241,7 @@ h2 "Config git/GitLab user.name & email"
 
 ## Setup env
 
-   if [ PACKAGE_MANAGER == "brew" ]; then
+   if [ "${PACKAGE_MANAGER}" == "brew" ]; then
       if ! command -v brew ; then
          h2 "Installing brew package manager using Ruby ..."
          mkdir homebrew && curl -L https://GitLab.com/Homebrew/brew/tarball/master \
@@ -255,19 +255,44 @@ h2 "Config git/GitLab user.name & email"
          # Homebrew 2.2.2
          # Homebrew/homebrew-core (git revision e103; last commit 2020-01-07)
          # Homebrew/homebrew-cask (git revision bbf0e; last commit 2020-01-07)
-   elif [ PACKAGE_MANAGER == "apt-get" ]; then
-       apt-get install python-pip
-
-   elif [ PACKAGE_MANAGER == "yum" ]; then
-      if ! command -v yum ; then
-         h2 "Installing yum package manager ..."
+   elif [ "${PACKAGE_MANAGER}" == "apt-get" ]; then  # (Advanced Packaging Tool) for Debian/Ubuntu
+      if ! command -v apt-get ; then
+         h2 "Installing apt-get package manager ..."
+         wget http://security.ubuntu.com/ubuntu/pool/main/a/apt/apt_1.0.1ubuntu2.17_amd64.deb -O apt.deb
+         sudo dpkg -i apt.deb
+         # Alternative:
+         # pkexec dpkg -i apt.deb
       else
          if [ "${UPDATE_PKGS}" = true ]; then
-            yum -y install python-pip
+            h2 "Upgrading apt-get ..."
+            # https://askubuntu.com/questions/194651/why-use-apt-get-upgrade-instead-of-apt-get-dist-upgrade
+            sudo apt-get update && time sudo apt-get dist-upgrade
          fi
       fi
+      note "$( apt-get --version )"
+
+   elif [ "${PACKAGE_MANAGER}" == "yum" ]; then  #  (Yellow dog Updater Modified) for Red Hat, CentOS
+      if ! command -v yum ; then
+         h2 "Installing yum rpm package manager ..."
+         # https://www.unix.com/man-page/linux/8/rpm/
+         wget https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-11.noarch.rpm
+         rpm -ivh yum-3.4.3-154.el7.centos.noarch.rpm
+      else
+         if [ "${UPDATE_PKGS}" = true ]; then
+            #rpm -ivh telnet-0.17-60.el7.x86_64.rpm
+            # https://unix.stackexchange.com/questions/109424/how-to-reinstall-yum
+            rpm -V yum
+            # https://www.cyberciti.biz/faq/rhel-centos-fedora-linux-yum-command-howto/
+         fi
+      fi
+   #  Suse Linux "${PACKAGE_MANAGER}" == "zypper" ?
    fi
 
+# dpkg -i telnet_0.17-40_amd64.deb       
+#       apt-get install python-pip
+
+
+   yum -y install python-pip
 
 
 h2 "Install Python pip ecosystem:"
@@ -420,9 +445,39 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
    docker container ls
 
 
+h2 "Download virtualenv ..."
+
+   # Per https://virtualenv.pypa.io/en/stable/installation/
+   pip install --user virtualenv
+   source venv/bin/activate
+
+
+
 h2 "Run Python Flask snoodle-api app ..."
 cd snoodle-api
 ls
+
+
+#h2 "Activate (venv) ..."
+#   virtualenv venv --distribute
+   # virtualenv -p /usr/bin/python3 venv
+
+#   if [ -d "venv" ]; then
+#      source venv/bin/activate
+#      # "(venv)" should now appear.
+#   fi
+#note "$( which python )"    # /Users/wilson_mar/gits/wilsonmar/snakeeyes/venv/bin/python
+#note "$( python -V )"       # Python 3.7.6
+
+
+#h2 "Install packages requirements.txt ..."
+#   # pip install -r requirements.txt --no-index --find-links file:///tmp/packages
+#   if [ -f "requirements.txt" ]; then
+#      pip install -r requirements.txt
+#         # Successfully installed Flask-0.10.1 Jinja2-2.10.3 MarkupSafe-1.1.1 gunicorn-19.4.5 itsdangerous-1.1.0 werkzeug-0.14.1
+#   fi
+
+
 #if [ ! -f "snoodle/app.py" ]; then
 #   error "Flask app not found. Aborting."
 #else
@@ -432,6 +487,11 @@ ls
       DB_NAME=snoodle HTTP_SCHEME=https 
    python3 -m flask run 
 #fi
+
+#h2 "Deactivate venv and remove venv folder ..."
+#   deactivate
+#   rm -rf venv
+
 
 exit
 
@@ -451,4 +511,5 @@ psql postgresql://snoodle:snoodle@localhost:5432/snoodle
    # 
    # snoodle=# 
    # \q 
+
 
