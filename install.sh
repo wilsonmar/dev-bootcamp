@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# install.sh in https://github.com/wilsonmar/dev-bootcamp
+# install.sh in https://GitLab.com/wilsonmar/dev-bootcamp
 # This downloads and installs all the utilities, then verifies.
 # After getting into the Cloud9 enviornment,
 # cd to folder, copy this line and paste in the Cloud9 terminal:
-# bash -c "$(curl -fsSL https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh)" -v
+# bash -c "$(curl -fsSL https://raw.GitLabusercontent.com/wilsonmar/dev-bootcamp/master/install.sh)" -v
 
 # This was tested on macOS Mojave and Amazon Linux 2018.2 in EC2.
 
@@ -118,8 +118,8 @@ args_prompt() {
    echo "USAGE EXAMPLE during testing (minimal inputs using defaults):"
    #echo "   ./install.sh -u \"John Doe\" -e \"john_doemckinsey.com\" -v -D"
    echo "OPTIONS:"
-   echo "   -n       GitHub user name"
-   echo "   -e       GitHub user email"
+   echo "   -n       GitLab user name"
+   echo "   -e       GitLab user email"
    echo "   -R       reboot Docker before run"
    echo "   -v       to run verbose (list space use and each image to console)"
    echo "   -d       to delete files after run (to save disk space)"
@@ -142,8 +142,8 @@ DOCKER_DB_NANE="snoodle-postgres"
 DOCKER_APP_NANE="snoodle"
 
 SECRETS_FILEPATH="$HOME/secrets.sh"  # -s
-GITHUB_USER_NAME=""                  # -n
-GITHUB_USER_EMAIL=""                 # -e
+GITLAB_USER_NAME=""                  # -n
+GITLAB_USER_EMAIL=""                 # -e
 
 
 while test $# -gt 0; do
@@ -154,12 +154,12 @@ while test $# -gt 0; do
       ;;
     -n*)
       shift
-      export GITHUB_USER_NAME=`echo $1 | sed -e 's/^[^=]*=//g'`
+      export GITLAB_USER_NAME=`echo $1 | sed -e 's/^[^=]*=//g'`
       shift
       ;;
     -e*)
       shift
-      export GITHUB_USER_EMAIL=`echo $1 | sed -e 's/^[^=]*=//g'`
+      export GITLAB_USER_EMAIL=`echo $1 | sed -e 's/^[^=]*=//g'`
       shift
       ;;
     -s*)
@@ -205,12 +205,12 @@ cd ~/environment/
 
 
 h2 "Downloading bash script install.sh ..."
-   curl -s -O https://raw.githubusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
-
+   curl -s -O https://raw.GitLabusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
+   # in case you want to run on server directly.
 
 h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
    curl -s -o ~/.git-prompt.sh \
-      https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh
+      https://raw.GitLabusercontent.com/git/git/master/contrib/completion/git-prompt.sh
          # 100 16938  100 16938    0     0   124k      0 --:--:-- --:--:-- --:--:--  124k
 
    # Add to your ~/.bash_profile:
@@ -223,20 +223,20 @@ h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
 
 ### Get secrets from $HOME/secrets.sh
 
-h2 "Config git/GitHub user.name & email"
+h2 "Config git/GitLab user.name & email"
    if [ -f "$SECRETS_FILEPATH" ]; then
       chmod +x "$SECRETS_FILEPATH"
       source   "$SECRETS_FILEPATH"  # run file containing variable definitions.
-      note "GITHUB_USER_NAME=\"$GITHUB_USER_NAME\" read from file $SECRETS_FILEPATH"
+      note "GITLAB_USER_NAME=\"$GITLAB_USER_NAME\" read from file $SECRETS_FILEPATH"
    else
-      read -p "Enter your GitHub user name [John Doe]: " GITHUB_USER_NAME
-      GITHUB_USER_NAME=${GITHUB_USER_NAME:-"John Doe"}
-      read -p "Enter your GitHub user email [john_doe@mckinsey.com]: " GITHUB_USER_EMAIL
-      GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-"John_Doe@mckinsey.com"}
+      read -p "Enter your GitLab user name [John Doe]: " GITLAB_USER_NAME
+      GITLAB_USER_NAME=${GITLAB_USER_NAME:-"John Doe"}
+      read -p "Enter your GitLab user email [john_doe@mckinsey.com]: " GITLAB_USER_EMAIL
+      GITLAB_USER_EMAIL=${GITLAB_USER_EMAIL:-"John_Doe@mckinsey.com"}
       # cp secrets.sh  "$SECRETS_FILEPATH"
    fi
-   git config --global user.name  "$GITHUB_USER_NAME"
-   git config --global user.email "$GITHUB_USER_EMAIL"
+   git config --global user.name  "$GITLAB_USER_NAME"
+   git config --global user.email "$GITLAB_USER_EMAIL"
 
 
 ## Setup env
@@ -244,7 +244,7 @@ h2 "Config git/GitHub user.name & email"
    if [ PACKAGE_MANAGER == "brew" ]; then
       if ! command -v brew ; then
          h2 "Installing brew package manager using Ruby ..."
-         mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master \
+         mkdir homebrew && curl -L https://GitLab.com/Homebrew/brew/tarball/master \
             | tar xz --strip 1 -C homebrew
       else
          if [ "${UPDATE_PKGS}" = true ]; then
@@ -307,7 +307,7 @@ h2 "Install Python pip ecosystem:"
    pipenv install sqlalchemy
 
 
-# First remove boot2docker and Kitematic https://github.com/boot2docker/boot2docker/issues/437
+# First remove boot2docker and Kitematic https://GitLab.com/boot2docker/boot2docker/issues/437
 if ! command -v docker >/dev/null; then  # /usr/local/bin/docker
       h2 "Installing docker ..."
       brew install docker  docker-compose  
@@ -383,8 +383,8 @@ else
 fi
 
 
-h2 "Remove all containers running in Docker from previous run ..."
-   docker container ls -q
+h2 "Remove containers running in Docker from previous run ..."
+   #docker container ls -q
    #docker container ls -a --filter status=exited --filter status=created
 
    # Remove all running containers:  
@@ -405,7 +405,6 @@ h2 "Remove all containers running in Docker from previous run ..."
    fi
 
 
-
 h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
    nohup docker run -d --rm --name "$DOCKER_DB_NANE" -p 5432:5432 \
    -e POSTGRES_USER=snoodle \
@@ -416,9 +415,10 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
       # 2020-01-10 01:22:30.909 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
       # database system is ready to accept connections
 
-# control+C to exit here.
+   # detached means control+C not needed to exit here.
 
    docker container ls
+
 
 h2 "Run Python Flask snoodle-api app ..."
 cd snoodle-api
@@ -433,7 +433,22 @@ ls
    python3 -m flask run 
 #fi
 
-# openvt
-# deallocvt n
+exit
 
+# cd snoodle-api  ???
+npm install
+npm start
+
+# cd snoodle-ui  ???
+
+
+# shell into db
+psql postgresql://snoodle:snoodle@localhost:5432/snoodle
+   # psql (9.2.24, server 12.1 (Debian 12.1-1.pgdg100+1))
+   # WARNING: psql version 9.2, server version 12.0.
+   #          Some psql features might not work.
+   # Type "help" for help.
+   # 
+   # snoodle=# 
+   # \q 
 
