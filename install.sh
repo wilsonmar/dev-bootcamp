@@ -445,11 +445,11 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
    docker container ls
 
 
-h2 "Download virtualenv ..."
+#h2 "Download virtualenv ..."
 
    # Per https://virtualenv.pypa.io/en/stable/installation/
-   pip install --user virtualenv
-   source venv/bin/activate
+#   pip install --user virtualenv
+#   source venv/bin/activate
 
 
 
@@ -458,16 +458,16 @@ cd snoodle-api
 ls
 
 
-h2 "Activate (venv) ..."
-   virtualenv venv --distribute
-   # virtualenv -p /usr/bin/python3 venv
-
-   if [ -d "venv" ]; then
-      source venv/bin/activate
-      # "(venv)" should now appear.
-   fi
-note "$( which python )"    # /Users/wilson_mar/gits/wilsonmar/snakeeyes/venv/bin/python
-note "$( python -V )"       # Python 3.7.6
+#h2 "Activate (venv) ..."
+#   virtualenv venv --distribute
+#   # virtualenv -p /usr/bin/python3 venv
+#
+#   if [ -d "venv" ]; then
+#      source venv/bin/activate
+#      # "(venv)" should now appear.
+#   fi
+#note "$( which python )"    # /Users/wilson_mar/gits/wilsonmar/snakeeyes/venv/bin/python
+#note "$( python -V )"       # Python 3.7.6
 
 
 h2 "Install packages requirements.txt ..."
@@ -489,9 +489,9 @@ h2 "Install packages requirements.txt ..."
 #fi
 
 
-h2 "Deactivate venv and remove venv folder ..."
-   deactivate
-   rm -rf venv
+#h2 "Deactivate venv and remove venv folder ..."
+#   deactivate
+#   rm -rf venv
 
 
 exit
