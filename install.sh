@@ -458,24 +458,24 @@ cd snoodle-api
 ls
 
 
-#h2 "Activate (venv) ..."
-#   virtualenv venv --distribute
+h2 "Activate (venv) ..."
+   virtualenv venv --distribute
    # virtualenv -p /usr/bin/python3 venv
 
-#   if [ -d "venv" ]; then
-#      source venv/bin/activate
-#      # "(venv)" should now appear.
-#   fi
-#note "$( which python )"    # /Users/wilson_mar/gits/wilsonmar/snakeeyes/venv/bin/python
-#note "$( python -V )"       # Python 3.7.6
+   if [ -d "venv" ]; then
+      source venv/bin/activate
+      # "(venv)" should now appear.
+   fi
+note "$( which python )"    # /Users/wilson_mar/gits/wilsonmar/snakeeyes/venv/bin/python
+note "$( python -V )"       # Python 3.7.6
 
 
-#h2 "Install packages requirements.txt ..."
-#   # pip install -r requirements.txt --no-index --find-links file:///tmp/packages
-#   if [ -f "requirements.txt" ]; then
-#      pip install -r requirements.txt
-#         # Successfully installed Flask-0.10.1 Jinja2-2.10.3 MarkupSafe-1.1.1 gunicorn-19.4.5 itsdangerous-1.1.0 werkzeug-0.14.1
-#   fi
+h2 "Install packages requirements.txt ..."
+   # pip install -r requirements.txt --no-index --find-links file:///tmp/packages
+   if [ -f "requirements.txt" ]; then
+      pip install -r requirements.txt
+         # Successfully installed Flask-0.10.1 Jinja2-2.10.3 MarkupSafe-1.1.1 gunicorn-19.4.5 itsdangerous-1.1.0 werkzeug-0.14.1
+   fi
 
 
 #if [ ! -f "snoodle/app.py" ]; then
@@ -488,9 +488,10 @@ ls
    python3 -m flask run 
 #fi
 
-#h2 "Deactivate venv and remove venv folder ..."
-#   deactivate
-#   rm -rf venv
+
+h2 "Deactivate venv and remove venv folder ..."
+   deactivate
+   rm -rf venv
 
 
 exit
