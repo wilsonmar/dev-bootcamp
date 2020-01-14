@@ -13,7 +13,7 @@
 
 clear  # screen (but not history)
 
-set -e  # to end if 
+#set -e  # to end if 
 # set -eu pipefail  # pipefail counts as a parameter
 # set -x to show commands for specific issues.
 # set -o nounset
@@ -204,8 +204,8 @@ cd ~/environment/
    fi
 
 
-h2 "Downloading bash script install.sh ..."
-   curl -s -O https://raw.GitLabusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
+#h2 "Downloading bash script install.sh ..."
+#   curl -s -O https://raw.GitLabusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
    # in case you want to run on server directly.
 
 h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
