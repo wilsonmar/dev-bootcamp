@@ -122,7 +122,9 @@ args_prompt() {
    echo "   -e       GitLab user email"
    echo "   -R       reboot Docker before run"
    echo "   -v       to run verbose (list space use and each image to console)"
-   echo "   -d       to delete files after run (to save disk space)"
+   echo "   -V       to run under virtualenv"
+   echo "   -d       Download install.sh script"
+   echo "   -D       to delete files after run (to save disk space)"
  }
 if [ $# -eq 0 ]; then  # display if no paramters are provided:
    args_prompt
@@ -136,7 +138,10 @@ exit_abnormal() {                              # Function: Exit with error.
    UPDATE_PKGS=false
    RESTART_DOCKER=false
    RUN_ACTUAL=false  # false as dry run is default.
+   DOWNLOAD_INSTALL=false     # -d
    RUN_DELETE_AFTER=false     # -D
+   RUN_VENV=false             # -V
+   RUN_VERBOSE=false          # -v
 
 DOCKER_DB_NANE="snoodle-postgres"
 DOCKER_APP_NANE="snoodle"
@@ -179,8 +184,16 @@ while test $# -gt 0; do
       export RUN_VERBOSE=true
       shift
       ;;
+    -d)
+      export DOWNLOAD_INSTALL=true
+      shift
+      ;;
     -D)
       export RUN_DELETE_AFTER=true
+      shift
+      ;;
+    -V)
+      export RUN_VENV=true
       shift
       ;;
     *)
@@ -204,9 +217,12 @@ cd ~/environment/
    fi
 
 
-#h2 "Downloading bash script install.sh ..."
-#   curl -s -O https://raw.GitLabusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
+if [ "${DOWNLOAD_INSTALL}" = true ]; then
+   h2 "Downloading bash script install.sh ..."
+      curl -s -O https://raw.GitLabusercontent.com/wilsonmar/dev-bootcamp/master/install.sh
    # in case you want to run on server directly.
+fi
+
 
 h2 "Install aliases, PS1, etc. in ~/.bashrc ..."
    curl -s -o ~/.git-prompt.sh \
@@ -445,29 +461,30 @@ h2 "Run Docker detached container \"$DOCKER_DB_NANE\" ..."
    docker container ls
 
 
-#h2 "Download virtualenv ..."
-
-   # Per https://virtualenv.pypa.io/en/stable/installation/
-#   pip install --user virtualenv
-#   source venv/bin/activate
-
-
 
 h2 "Run Python Flask snoodle-api app ..."
 cd snoodle-api
 ls
 
 
-#h2 "Activate (venv) ..."
-#   virtualenv venv --distribute
-#   # virtualenv -p /usr/bin/python3 venv
-#
-#   if [ -d "venv" ]; then
-#      source venv/bin/activate
-#      # "(venv)" should now appear.
-#   fi
-#note "$( which python )"    # /Users/wilson_mar/gits/wilsonmar/snakeeyes/venv/bin/python
-#note "$( python -V )"       # Python 3.7.6
+if [ "${RUN_VENV}" = true ]; then
+   h2 "Download virtualenv ..."
+
+   # Per https://virtualenv.pypa.io/en/stable/installation/
+   pip install --user virtualenv
+   source venv/bin/activate
+
+   h2 "Activate (venv) ..."
+   virtualenv venv --distribute
+   # virtualenv -p /usr/bin/python3 venv
+
+   if [ -d "venv" ]; then
+      source venv/bin/activate
+      # "(venv)" should now appear.
+   fi
+   note "$( which python )"    # /Users/wilson_mar/gits/wilsonmar/snakeeyes/venv/bin/python
+   note "$( python -V )"       # Python 3.7.6
+fi
 
 
 h2 "Install packages requirements.txt ..."
@@ -489,10 +506,11 @@ h2 "Install packages requirements.txt ..."
 #fi
 
 
-#h2 "Deactivate venv and remove venv folder ..."
-#   deactivate
-#   rm -rf venv
-
+if [ "${RUN_VENV}" = true ]; then
+   h2 "Deactivate venv and remove venv folder ..."
+   deactivate
+   rm -rf venv
+fi
 
 exit
 
